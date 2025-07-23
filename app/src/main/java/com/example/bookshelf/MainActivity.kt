@@ -1,47 +1,37 @@
 package com.example.bookshelf
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.bookshelf.ui.theme.BookshelfTheme
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.example.bookshelf.data.network.BookshelfApi
+import com.example.bookshelf.data.repository.BookshelfRepository
+import com.example.bookshelf.ui.screens.BookScreen
+import com.example.bookshelf.ui.viewmodel.BookViewModel
+import com.example.compose.BookshelfTheme
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        // Create APi service and repository manually
+        val apiService = BookshelfApi.retrofitService
+        val repository = BookshelfRepository(apiService)
+
+        // Create ViewModel manually (when not using Hilt)
+        val viewModel = BookViewModel(repository)
+
         setContent {
-            BookshelfTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            BookshelfTheme(
+                darkTheme = isSystemInDarkTheme(), // this enables dark/light switch automatically
+                dynamicColor = false
+            ) {
+                BookScreen(viewModel)
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BookshelfTheme {
-        Greeting("Android")
-    }
-}
